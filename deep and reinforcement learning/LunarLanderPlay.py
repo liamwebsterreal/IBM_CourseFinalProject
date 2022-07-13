@@ -1,5 +1,7 @@
 import gym
 import time
+
+import pygame
 import keyboard
 
 env = gym.make("LunarLander-v2")
@@ -29,3 +31,5 @@ while True:
     else:
         env.step(0)
         env.render()
+
+pygame.quit()
