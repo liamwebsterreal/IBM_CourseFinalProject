@@ -1,3 +1,6 @@
 
-def TradingGraph():
-    return None
+from pandas import DataFrame
+
+
+class TradingGraph(DataFrame, **kwargs):
+    
