@@ -3,7 +3,9 @@ import pandas as pd
 import numpy as np
 from gym import spaces
 from sklearn import preprocessing
-import matplotlib.pyplot as plt
+from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3 import PPO, A2C
+from stable_baselines3.sac.policies import MlpPolicy
 from utils import TradingGraph
 
 import warnings
@@ -30,13 +32,15 @@ class TradingEnv(gym.Env):
 
         # actions space 0: buy 100%, 1: hold, 2, sell 100%
         self.action_space = spaces.Discrete(3)
-        self.observation_space = spaces.Box(low=0, high=1, shape=(lookback_window_size + 1, 12), dtype=np.float16)
+        self.observation_space = spaces.Box(low=0, high=1, shape=(3, self.lookback_window_size + 1), dtype=np.float16)
 
     def reset(self):
         self.net_worth = self.initial_balance
         self.cash_held = self.initial_balance
         self.asset_held = 0  
         self.current_step = 0
+        self.rewards = [0]
+        done = False
 
         self._reset_session()
         
@@ -47,10 +51,11 @@ class TradingEnv(gym.Env):
         self.account_history = pd.DataFrame(np.transpose([net_worth_array, cash_held_array, zero_array, zero_array,zero_array, zero_array, zero_array]), columns=self.account_history_cols)
 
         self.trades = pd.DataFrame(columns= self.trade_cols)
+        obs = self._next_observation()
 
-        return self._next_observation()
+        return obs['net_worth'], obs['High'], obs['Volume']
 
-    def render(self, mode='human'):
+    def render(self, mode='bot'):
         if mode == 'human':
             if self.viewer is None:
                 self.viewer = TradingGraph(self.df)
@@ -77,7 +82,7 @@ class TradingEnv(gym.Env):
         reward = self.net_worth - prev_net_worth
         done = self.net_worth <= 0.1 * self.initial_balance
 
-        return obs, reward, done, {}
+        return obs['net_worth'], obs['High'], obs['Volume']
 
     def _reset_session(self):
 
@@ -157,9 +162,14 @@ if __name__ == "__main__":
     filepath = 'data\BTC-USD_hourly2020.csv'
     data = pd.read_csv(filepath)
     env = TradingEnv(data,'BTC', serial=True)
-    env.reset()
-    buy = True
-    for i in range(100):
-        action = 1 if i % 2 == 0 else 0
-        env.step(action)
-        env.render()
+    slice_point = int(len(data) - 800)
+    train_df = data[:slice_point]
+    test_df = data[slice_point:]
+    train_env = DummyVecEnv([lambda: TradingEnv(train_df, asset='BTC', commission=0, serial=True,)])
+    test_env = DummyVecEnv([lambda: TradingEnv(test_df, asset='BTC', commission=0, serial=True)])
+    model = A2C(MlpPolicy,
+             train_env,
+             learning_rate=0.01,
+             verbose=1, 
+             tensorboard_log="./tensorboard/")
+    model.learn(total_timesteps=100)
