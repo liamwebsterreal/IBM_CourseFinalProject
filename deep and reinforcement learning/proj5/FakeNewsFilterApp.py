@@ -1,15 +1,19 @@
 
 import streamlit as st
 import pickle
-from tensorflow.keras.utils import pad_sequences
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
-import re 
 from nltk.corpus import stopwords
+from nltk import download
 from tensorflow import keras 
+import re 
 
 @st.cache(allow_output_mutation=True)
 def loadmodel():
+    download('stopwords')
+    download('punkt')
+    download('wordnet')
+    download('omw-1.4')
     with open('tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)
     loaded_model = keras.models.load_model("final_model_tf")
@@ -27,7 +31,7 @@ def CorpusGen(text):
 
 def tokenize(tokenizer, corpus):
     sequence = tokenizer.texts_to_sequences([corpus])
-    padded_text = pad_sequences(sequence, maxlen=600, padding='post', truncating='post')
+    padded_text = keras.utils.pad_sequences(sequence, maxlen=600, padding='post', truncating='post')
     return padded_text
 
 def testmodel(loaded_model, tokenizer, text):
