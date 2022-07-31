@@ -14,9 +14,9 @@ def loadmodel():
     download('punkt')
     download('wordnet')
     download('omw-1.4')
-    with open('tokenizer.pickle', 'rb') as handle:
+    with open('deep_and_reinforcement_learning/proj5/tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)
-    loaded_model = keras.models.load_model("final_model_tf")
+    loaded_model = keras.models.load_model("deep_and_reinforcement_learning/proj5/final_model_tf")
     return loaded_model, tokenizer
 
 def CorpusGen(text):
