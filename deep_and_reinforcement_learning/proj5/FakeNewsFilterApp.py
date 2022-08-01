@@ -44,16 +44,16 @@ def testmodel(loaded_model, tokenizer, text):
                 if(prediction[0] < 0.02):
                     result.text("FAKE NEWS! With high likelihood")
                 elif(prediction[0] < 0.10):
-                    result.text("FAKE NEWS! With medium likelihood")
+                    result.text("Fake News! With fair likelihood")
                 else:
-                    result.text("FAKE NEWS! With low likelihood")
+                    result.text("Elements of Fake News")
             elif(prediction[0] > 0.80):
                 if(prediction[0] > 0.99):
                     result.text("Real News, with high likelihood")
                 elif(prediction[0] > 0.90):
-                    result.text("Real News, with medium likelihood")
+                    result.text("Real News, with fair likelihood")
                 else:
-                    result.text("Real News, with low likelihood")
+                    result.text("Elements of Real News")
             else:
                 result.text("Article Analysis was Inconclusive")
     else:
