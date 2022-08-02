@@ -77,7 +77,7 @@ st.subheader("Input Article: ")
 
 input_title = st.text_input('Article Title', key='title')
 
-input_text = st.text_input('Article Text', key='text')
+input_text = st.text_area('Article Text', key='text')
 
 result = st.empty()
 
